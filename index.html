@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineMate | Smart Movie Recommendations</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2C3E50;
+      --accent-color: #E74C3C;
+      --light-bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #2C3E50;
+      --gradient-start: #3498DB;
+      --gradient-end: #2980B9;
+    }
+    
+    body {
+      background-color: var(--light-bg);
+      color: var(--text-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+    }
+    
+    .navbar {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px 0;
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 28px;
+      color: white !important;
+    }
+    
+    .navbar-brand i {
+      margin-right: 10px;
+      color: var(--accent-color);
+    }
+    
+    .hero {
+      background: url('/api/placeholder/1200/400') center/cover;
+      position: relative;
+      padding: 80px 0;
+      margin-bottom: 40px;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.6));
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      color: white;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .hero p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .select-container {
+      position: relative;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      background-color: var(--card-bg);
+      padding: 30px;
+      margin-top: -50px;
+      z-index: 2;
+    }
+    
+    .select-label {
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: var(--primary-color);
+    }
+    
+    .custom-select-wrapper {
+      position: relative;
+    }
+    
+    .custom-select {
+      appearance: none;
+      padding: 15px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 100%;
+      background-color: white;
+      transition: all 0.3s;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+    
+    .custom-select:focus {
+      outline: none;
+      border-color: var(--gradient-start);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .custom-select-icon {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gradient-start);
+      pointer-events: none;
+    }
+    
+    .recommendation-btn {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      border: none;
+      padding: 15px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      margin-top: 20px;
+      width: 100%;
+      transition: all 0.3s;
+      box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+    }
+    
+    .recommendation-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+    }
+    
+    .recommendation-btn:active {
+      transform: translateY(1px);
+    }
+    
+    .error-alert {
+      background-color: #FFE5E5;
+      border-left: 4px solid var(--accent-color);
+      color: #D63031;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px auto;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .error-alert i {
+      margin-right: 10px;
+      font-size: 20px;
+    }
+    
+    .recommendations-section {
+      padding: 40px 0;
+    }
+    
+    .recommendations-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    
+    .recommendations-header h2 {
+      font-weight: 700;
+      color: var(--primary-color);
+      display: inline-block;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .recommendations-header h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    }
+    
+    .recommendations-header .selected-movie {
+      font-style: italic;
+      color: var(--accent-color);
+    }
+    
+    .movie-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      transition: all 0.4s ease;
+      margin-bottom: 30px;
+      height: 100%;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .movie-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .movie-poster-wrapper {
+      position: relative;
+      overflow: hidden;
+      height: 350px;
+    }
+    
+    .movie-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.8s;
+    }
+    
+    .movie-card:hover .movie-poster {
+      transform: scale(1.1);
+    }
+    
+    .movie-card-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+      padding: 20px 15px;
+      transform: translateY(100%);
+      transition: transform 0.4s ease;
+    }
+    
+    .movie-card:hover .movie-card-overlay {
+      transform: translateY(0);
+    }
+    
+    .movie-card-body {
+      padding: 20px;
+      position: relative;
+    }
+    
+    .movie-title {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: auto;
+      text-align: left;
+    }
+    
+    .movie-meta {
+      display: flex;
+      align-items: center;
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .movie-meta i {
+      margin-right: 5px;
+      color: var(--accent-color);
+    }
+    
+    .movie-meta span {
+      margin-right: 15px;
+    }
+    
+    .movie-rating {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    
+    .movie-rating i {
+      color: #FFC107;
+      margin-right: 2px;
+    }
+    
+    .rating-value {
+      font-weight: 600;
+      margin-left: 5px;
+    }
+    
+    .movie-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .movie-genres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    
+    .genre-tag {
+      background-color: #e9ecef;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--primary-color);
+    }
+    
+    .watch-btn {
+      color: var(--gradient-start);
+      font-weight: 600;
+      font-size: 14px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    
+    .watch-btn i {
+      margin-left: 5px;
+      transition: transform 0.3s;
+    }
+    
+    .watch-btn:hover i {
+      transform: translateX(3px);
+    }
+    
+    .loading-spinner {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(52, 152, 219, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--gradient-start);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 40px 0;
+      color: #6c757d;
+    }
+    
+    .no-results i {
+      font-size: 48px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    
+    .footer {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 40px 0 20px;
+      margin-top: 60px;
+    }
+    
+    .footer-content {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    
+    .footer-section {
+      flex: 1;
+      margin-bottom: 30px;
+      min-width: 250px;
+    }
+    
+    .footer-section h3 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      position: relative;
+      padding-bottom: 10px;
+    }
+    
+    .footer-section h3::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50px;
+      height: 2px;
+      background-color: var(--accent-color);
+    }
+    
+    .footer-links {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+    
+    .footer-links a {
+      color: #bdc3c7;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .footer-links a:hover {
+      color: white;
+    }
+    
+    .social-links {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      gap: 15px;
+    }
+    
+    .social-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      color: white;
+      transition: all 0.3s;
+    }
+    
+    .social-links a:hover {
+      background-color: var(--accent-color);
+      transform: translateY(-3px);
+    }
+    
+    .copyright {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 20px;
+      color: #bdc3c7;
+      font-size: 14px;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 992px) {
+      .hero h1 {
+        font-size: 2.8rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .hero {
+        padding: 60px 0;
+      }
+      
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+      
+      .select-container {
+        margin-top: -30px;
+      }
+      
+      .movie-poster-wrapper {
+        height: 280px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .hero {
+        padding: 40px 0;
+      }
+      
+      .hero h1 {
+        font-size: 1.8rem;
+      }
+      
+      .hero p {
+        font-size: 1rem;
+      }
+      
+      .select-container {
+        margin-top: -20px;
+        padding: 20px;
+      }
+    }
+    
+    /* Animation for cards */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-card {
+      animation: fadeInUp 0.6s forwards;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#"><i class="fas fa-film"></i>CineMate</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="#"><i class="fas fa-home me-1"></i>Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-compass me-1"></i>Discover</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-star me-1"></i>Top Rated</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-list me-1"></i>Watchlist</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Discover Your Next Favorite Movie</h1>
+      <p>Get personalized movie recommendations based on your taste. Tell us what you like, and we'll find movies you'll love.</p>
+    </div>
+  </section>
+
+  <!-- Select Container -->
+  <div class="container">
+    <div class="select-container">
+      <form method="POST" action="/" id="recommendation-form">
+        <div class="mb-4">
+          <label for="movie" class="select-label">What movie did you enjoy recently?</label>
+          <div class="custom-select-wrapper">
+            <select class="custom-select" id="movie" name="movie" required>
+              <option value="" selected disabled>Select a movie from our library</option>
+              {% for movie in movie_list %}
+              <option value="{{ movie }}" {% if selected_movie == movie %}selected{% endif %}>{{ movie }}</option>
+              {% endfor %}
+            </select>
+            <div class="custom-select-icon">
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="recommendation-btn" id="get-recommendations">
+          <i class="fas fa-magic me-2"></i>Get Personalized Recommendations
+        </button>
+      </form>
+    </div>
+
+    <!-- Error Message -->
+    {% if error %}
+    <div class="error-alert">
+      <i class="fas fa-exclamation-circle"></i>
+      <div>{{ error }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loading">
+      <div class="spinner mx-auto"></div>
+      <p class="mt-3">Finding the perfect movies for you...</p>
+    </div>
+
+    <!-- Recommendations Section -->
+    {% if recommended_movies %}
+    <section class="recommendations-section">
+      <div class="recommendations-header">
+        <h2>Recommended Movies Based on <span class="selected-movie">"{{ selected_movie }}"</span></h2>
+      </div>
+      <div class="row" id="recommendations-container">
+        {% for movie_name, movie_poster in recommended_movies %}
+        <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+          <div class="movie-card animate-card" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+            <div class="movie-poster-wrapper">
+              <img src="{{ movie_poster }}" alt="{{ movie_name }}" class="movie-poster">
+              <div class="movie-card-overlay">
+                <div class="movie-meta">
+                  <i class="fas fa-calendar"></i>
+                  <span>2023</span>
+                  <i class="fas fa-clock ms-2"></i>
+                  <span>125 min</span>
+                </div>
+                <p class="text-white small">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.</p>
+              </div>
+            </div>
+            <div class="movie-card-body">
+              <h5 class="movie-title">{{ movie_name }}</h5>
+              <div class="movie-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+                <span class="rating-value">8.5</span>
+              </div>
+              <div class="movie-card-footer">
+                <div class="movie-genres">
+                  <span class="genre-tag">Drama</span>
+                  <span class="genre-tag">Action</span>
+                </div>
+                <button class="watch-btn">Watch <i class="fas fa-arrow-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>About CineMate</h3>
+          <p>CineMate uses advanced AI algorithms to provide personalized movie recommendations based on your preferences and viewing history.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Discover</a></li>
+            <li><a href="#">Top Rated</a></li>
+            <li><a href="#">New Releases</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Connect With Us</h3>
+          <ul class="social-links">
+            <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+            <li><a href="#"><i class="fab fa-youtube"></i></a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">
+        <p>&copy; 2025 CineMate. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle form submission with loading effect
+      const form = document.getElementById('recommendation-form');
+      const loadingSpinner = document.getElementById('loading');
+      const recommendationsContainer = document.getElementById('recommendations-container');
+      
+      if (form) {
+        form.addEventListener('submit', function() {
+          if (recommendationsContainer) {
+            recommendationsContainer.style.opacity = '0.5';
+          }
+          loadingSpinner.style.display = 'block';
+          
+          // Simulate loading (in real implementation, this would be handled by the server)
+          setTimeout(function() {
+            loadingSpinner.style.display = 'none';
+            if (recommendationsContainer) {
+              recommendationsContainer.style.opacity = '1';
+            }
+          }, 2000);
+        });
+      }
+      
+      // Add staggered animation to movie cards if they exist
+      const movieCards = document.querySelectorAll('.movie-card');
+      if (movieCards.length > 0) {
+        movieCards.forEach((card, index) => {
+          card.style.opacity = '0';
+          setTimeout(() => {
+            card.style.opacity = '1';
+            card.classList.add('animate-card');
+          }, 100 * index);
+        });
+      }
+      
+      // Enhance select input
+      const selectElement = document.querySelector('.custom-select');
+      if (selectElement) {
+        selectElement.addEventListener('focus', function() {
+          this.parentElement.classList.add('active');
+        });
+        
+        selectElement.addEventListener('blur', function() {
+          this.parentElement.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
